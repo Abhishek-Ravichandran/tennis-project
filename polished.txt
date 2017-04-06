@@ -1,0 +1,57 @@
+Global_surface
+player1Position:
+player2Position:
+ballPosition:
+
+Serve(Player, Side):
+known variables-
+Player: 'string'
+Side: Deuce or Advantage
+Handedness: Left or Right get from player
+
+probability of body,wide,T serve given side given surface
+Pick one serve style
+
+probability of 1st in, 2nd in, DF
+    If DF: give point to other player
+        end
+    if 1st in:
+        pick Ace given 1st given global_surface
+        pick FcedError given 1st given global_surface
+    if 2nd in:
+        pick Ace given 2nd
+        pick FcedError given 2nd
+
+finalVector = [serveStyle, aceProb, fcedErrorProb]
+Call Return(oppositePlayer,side, otherPlayerHandedNess, finalVector)
+
+Return(player, side, handedNess, serveStyle, aceProb, fcedErrorProb, returnableProb):
+    from AceProb and fcedErrorProb determine if game has ended:
+        Game ended end other player gets point
+    
+    #Stats next state needs to determine if game ended
+    From side and serveStyle
+        Pick winnerPercentage
+        Pick unforcedError percentage
+    
+    inducedForced = 0 for returns
+    
+    Rally(oppositePlayer, returnDir, winnerPercentage, unforcedError, induceForced, futureBallPosition, otherPlayerHandedNess)
+        
+Rally(player, returnDir, winnerPercentage, unforcedError, induceForced, style, otherPlayerHandedNess)
+        
+        winner = 0.2, induceForced = 0.3, unforcedError = 0.1, normal = 0.4
+        if winnerPercentage or induceForced:
+            end game, other player gets a point
+
+        if unforcedError:
+            end game, current player gets a point
+            
+            Sample from shot direction:
+                FH, BH, OR SLICE
+                    Sample shot type:
+                    ADD ALL FH. BH or SLICE shot types, pick one shot types
+                    Extract the winnerPercentage, induceForced, unforcedError
+        winnerPercentage
+
+        Rally(player, winnerPercentage, unforcedError, induceForced, style, otherPlayerHandedNess)

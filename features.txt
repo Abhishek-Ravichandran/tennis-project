@@ -1,0 +1,161 @@
+Global_surface
+player1Position:
+player2Position:
+ballPosition:
+
+Serve(Player, Side):
+known variables-
+Player: 'string'
+Side: Deuce or Advantage
+Handedness: Left or Right get from player
+
+probability of body,wide,T serve given side given surface
+Pick one serve style
+
+probability of 1st in, 2nd in, DF
+    If DF: give point to other player
+        end
+    if 1st in:
+        pick Ace given 1st given global_surface
+        pick FcedError given 1st given global_surface
+    if 2nd in:
+        pick Ace given 2nd
+        pick FcedError given 2nd
+
+finalVector = [serveStyle, aceProb, fcedErrorProb]
+Call Return(oppositePlayer,side, otherPlayerHandedNess, finalVector)
+
+Return(player, side, handedNess, serveStyle, aceProb, fcedErrorProb, returnableProb):
+    from AceProb and fcedErrorProb determine if game has ended:
+        Game ended end other player gets point
+    
+    #Stats next state needs to determine if game ended
+    From side and serveStyle
+        Pick winnerPercentage
+        Pick unforcedError percentage
+    
+    #remember for returns it's equally likely
+    if serveStyle == W:
+        pick from DL, DM, CC
+    if serveStyle == B:
+        pick from DL, DM, CC
+    if serveStyle == T:
+        pick from CC, DM NOT DL
+    
+    if +1 position:
+        if CC:
+            send to other player's +1
+        if DM:
+            send to other's 0
+        if DL:
+            send to other's -1
+    if -1 position:
+        if CC:
+            send to other's -1
+        if DM:
+            send to other's 0
+        if DL:
+            send to other's +1
+    
+    inducedForced = 0 for returns
+    
+    Rally(oppositePlayer, winnerPercentage, unforcedError, induceForced, futureBallPosition, otherPlayerHandedNess)
+        
+Rally(player, winnerPercentage, unforcedError, induceForced, style, otherPlayerHandedNess)
+        
+        winner = 0.2, induceForced = 0.3, unforcedError = 0.1, normal = 0.4
+        if winnerPercentage or induceForced:
+            end game, other player gets a point
+
+        if unforcedError:
+            end game, current player gets a point
+            
+            Sample from shot direction:
+                FH, BH, OR SLICE
+                    Sample shot type:
+                    ADD ALL FH. BH or SLICE shot types, pick one shot types
+                    Extract the winnerPercentage, induceForced, unforcedError
+
+        Rally(player, winnerPercentage, unforcedError, induceForced, style, otherPlayerHandedNess)
+
+     
+if ballside == tie:
+    pick random forehand or backhand
+else if ballside == hand:
+    forehand
+else
+    backhand
+
+
+#Compute the returnStyle stats
+    From side, serveStyle:
+        Compute ball side:
+        #
+        Deuce = right
+        Deuce+wide = right
+        Deuce+T = left
+        Deuce+body = tie 
+        
+        Advantage = left
+        Advantage+wide = left
+        Advantage+T = right
+        Advantage+body = tie
+        #
+        
+        if currentPos == 1
+            ballcoming at you at 1:
+                if hand == right:
+                    #50/50 split of ball left or right
+                    if ball == right:
+                        pick FHCC, FHDM, FHDL, BHIO, FH-SLICECC, FH-SLICEDM, FH-SLICEDL, BH-SLICEIO
+                    if ball == left:
+                        pick FHII, FHIO, BHDM, BHCC, BHDL, BH-SLICECC, BH-SLICEDM, BH-SLICEDL, FH-SLICEIO
+                if hand == left:
+                    if ball == right:
+                        pick FHIO, BHCC, BHDM, BH-SLICECC, BH-SLICEDM, FH-SLICEIO
+                    if ball == left:
+                        pick FHCC, FHDM, FHDL, BHIO, FH-SLICECC, FH-SLICEDM, FH-SLICEDL, BH-SLICEIO
+            ballcoming at you at 0:
+                # at this point, ball can only be to your left
+                if hand == right:
+                    pick FHIO, BHCC, BHDM, BH-SLICECC, BH-SLICEDM, FH-SLICEIO
+                if hand == left:
+                    pick FHCC, FHDM, BHIO, FH-SLICECC, FH-SLICEDM, BH-SLICEIO
+            ballcoming at you at -1:
+                # at this point, ball can only be to your left
+                #TODO: penalty because it's so far
+                if hand == right:
+                    pick BHCC, BHDM, BHDL
+                if hand == left:
+                    pick FHCC, FHDM, FHDL
+        else if currentPos == 0
+            ballcoming at you at 1:
+                # at this point, ball can only be to your right
+                if hand == right:
+                    pick FHCC, FHDM, FHDL, BHIO, FH-SLICECC, FH-SLICEDM, FH-SLICEDL, BH-SLICEIO
+                if hand == left:
+                    pick BHCC, BHDM, BHDL, FHIO, BH-SLICECC, BH-SLICEDM, BH-SLICEDL, FH-SLICEIO
+            ballcoming at you at 0:
+                every shot apart from the DL shots
+            ballcoming at you at -1:
+                #ball can only be to your left
+                if hand == right
+                    pick BHCC, BHDM, BHDL, FHIO, BH-SLICECC, BH-SLICEDM, BH-SLICEDL, FH-SLICEIO
+                if hand == left
+                    pick FHCC, FHDM, FHDL, BHIO, FH-SLICECC, FH-SLICEDL, FH-SLICEDM, BH-SLICEIO
+        else if currentPos == -1
+            ballcoming at you at 1:
+                #ball can only be to your right
+                #TODO:need some penalty
+                if hand == right:
+                    pick FHCC, FHDM, FHDL
+                if hand == left:
+                    pick BHCC, BHDM, BHDL
+            ballcoming at you at 0:
+                if hand == right:
+                    pick FHCC, FHDM, BHIO, FH-SLICECC, FH-SLICEDM, BH-SLICEIO
+                if hand == left:
+                    pick BHCC, BHDM, FHIO, BH-SLICECC, BH-SLICEDM, FH-SLICEIO
+            ballcoming at you at -1:
+                if hand == right:
+                    pick FH
